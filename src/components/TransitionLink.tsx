@@ -11,6 +11,7 @@ interface TransitionLinkProps extends LinkProps {
   style?: React.CSSProperties;
   onMouseEnter?: (e: React.MouseEvent) => void;
   onMouseLeave?: (e: React.MouseEvent) => void;
+  target?: string;
 }
 
 export const TransitionLink = ({ 

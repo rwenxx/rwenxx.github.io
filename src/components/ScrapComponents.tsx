@@ -17,11 +17,11 @@ export const Tape = ({ style }: { style?: React.CSSProperties }) => (
   }} />
 );
 
-export const CutoutText = ({ text, rotation, bg = '#fff', color = '#111', style }: { text: string, rotation: number, bg?: string, color?: string, style?: React.CSSProperties }) => {
+export const CutoutText = ({ text, rotation, bg = '#fff', color = '#111', style, className = "" }: { text: string, rotation: number, bg?: string, color?: string, style?: React.CSSProperties, className?: string }) => {
   const { playMarker } = useUISounds();
   
   return (
-  <div className="hover-lift" 
+  <div className={`hover-lift ${className}`} 
     onMouseEnter={() => playMarker()}
     style={{
       backgroundColor: bg,
@@ -76,13 +76,14 @@ export const NavTag = ({ text, rotation, href = "/" }: { text: string, rotation:
   );
 };
 
-export const Polaroid = ({ src, text, rotation, width = '200px', className = "" }: { src: string, text: string, rotation: number, width?: string, className?: string }) => {
+export const Polaroid = ({ src, text, rotation, width = '200px', className = "", style }: { src: string, text: string, rotation: number, width?: string, className?: string, style?: React.CSSProperties }) => {
   const { playPaper } = useUISounds();
 
   return (
   <div className={`hover-lift ${className}`} 
     onMouseEnter={() => playPaper()}
     style={{
+      ...style,
       backgroundColor: '#fff',
     padding: '10px 10px 40px 10px',
     width: width,

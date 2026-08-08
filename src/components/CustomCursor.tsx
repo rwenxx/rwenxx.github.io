@@ -89,7 +89,7 @@ export default function CustomCursor() {
         target.classList.contains("cassette") ||
         target.classList.contains("transport-btn");
 
-      setIsHovering(isInteractive);
+      setIsHovering(!!isInteractive);
     };
 
     window.addEventListener("mousemove", onMouseMove);
