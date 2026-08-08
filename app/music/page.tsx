@@ -35,6 +35,9 @@ export default function MusicPage() {
 
   const [isPlaying,   setIsPlaying]   = useState(false);
   const [tapeCounter, setTapeCounter] = useState('000');
+  
+  const [scale, setScale] = useState(1);
+  const scaleRef = useRef(1);
 
   // Each cassette's current absolute position (px from container top-left)
   const pos = useRef<Record<string, { x: number; y: number }>>({});
@@ -44,31 +47,55 @@ export default function MusicPage() {
     id: string; startMX: number; startMY: number; startEX: number; startEY: number;
   } | null>(null);
 
+  // ── Handle resizing & scaling ────────────────
+  useEffect(() => {
+    const handleResize = () => {
+      let s = 1;
+      if (window.innerWidth < 800) {
+        s = Math.min(window.innerWidth / 460, window.innerHeight / 900);
+      }
+      setScale(s);
+      scaleRef.current = s;
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // ── Init positions on mount ──────────────────
   useEffect(() => {
     const c = containerRef.current;
     if (!c) return;
+    const isMobile = window.innerWidth < 768;
     const cx = c.offsetWidth  / 2 - CW / 2;
     const cy = c.offsetHeight / 2 - CH / 2;
 
-    CASSETTES.forEach(({ id, offset }) => {
-      const x = cx + offset.x;
-      const y = cy + offset.y;
+    CASSETTES.forEach(({ id, offset }, i) => {
+      let ox = offset.x;
+      let oy = offset.y;
+      if (isMobile) {
+        if (i === 0) { ox = 0; oy = -360; }
+        if (i === 1) { ox = -80; oy = 360; }
+        if (i === 2) { ox = 80; oy = 380; }
+      }
+      const x = cx + ox;
+      const y = cy + oy;
       pos.current[id] = { x, y };
       const el = document.getElementById(id);
-      if (el) gsap.set(el, { x, y, rotation: offset.r });
+      if (el) gsap.set(el, { x, y, rotation: isMobile ? offset.r * 0.4 : offset.r });
     });
   }, []);
 
-  // ── Global mouse events for drag ─────────────
+  // ── Global pointer events for drag (mouse & touch) ──
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
+    const onMove = (e: PointerEvent) => {
       const d = drag.current;
       if (!d) return;
       const el = document.getElementById(d.id);
       if (!el) return;
-      const x = d.startEX + (e.clientX - d.startMX);
-      const y = d.startEY + (e.clientY - d.startMY);
+      const s = scaleRef.current;
+      const x = d.startEX + (e.clientX - d.startMX) / s;
+      const y = d.startEY + (e.clientY - d.startMY) / s;
       pos.current[d.id] = { x, y };
       // direct DOM for zero-lag
       el.style.transform = `translate(${x}px, ${y}px) rotate(0deg)`;
@@ -88,7 +115,7 @@ export default function MusicPage() {
         const er = el.getBoundingClientRect();
         const ox = Math.max(0, Math.min(er.right, sr.right)   - Math.max(er.left, sr.left));
         const oy = Math.max(0, Math.min(er.bottom, sr.bottom) - Math.max(er.top,  sr.top));
-        if ((ox * oy) / (CW * CH) > 0.3) {
+        if ((ox * oy) / (er.width * er.height) > 0.3) {
           snapIn(d.id, el);
           return;
         }
@@ -96,11 +123,11 @@ export default function MusicPage() {
       gsap.set(el, { zIndex: 30 });
     };
 
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup',   onUp);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup',   onUp);
     return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup',   onUp);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup',   onUp);
     };
   }, []); // runs once — no deps, uses refs only ✓
 
@@ -134,12 +161,14 @@ export default function MusicPage() {
     const el = document.getElementById(id);
     if (!el) return;
 
+    const isMobile = window.innerWidth < 768;
     const cont = containerRef.current!;
     const cW2  = cont.offsetWidth;
     const cH2  = cont.offsetHeight;
     const side = Math.random() < 0.5 ? -1 : 1;
-    const tx   = cW2 / 2 - CW / 2 + side * (270 + Math.random() * 100);
-    const ty   = cH2 / 2 - CH / 2 + 100 + Math.random() * 110;
+    
+    const tx = isMobile ? cW2 / 2 - CW / 2 + side * (30 + Math.random() * 40) : cW2 / 2 - CW / 2 + side * (270 + Math.random() * 100);
+    const ty = isMobile ? cH2 / 2 - CH / 2 + 350 + Math.random() * 40 : cH2 / 2 - CH / 2 + 100 + Math.random() * 110;
     const rot  = (Math.random() - 0.5) * 46;
 
     gsap.set(el, { zIndex: 100 });
@@ -207,6 +236,12 @@ export default function MusicPage() {
         onEnded={() => { setIsPlaying(false); setTapeCounter('000'); }}
         onTimeUpdate={handleTimeUpdate}
       />
+
+      {/* ── SCALED CONTENT ── */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+        transform: `scale(${scale})`, transformOrigin: 'center center'
+      }}>
 
       {/* ── SVG CABLE ── */}
       <svg viewBox="0 0 1000 700" preserveAspectRatio="none"
@@ -404,7 +439,7 @@ export default function MusicPage() {
       {CASSETTES.map(c => (
         <div
           key={c.id} id={c.id}
-          onMouseDown={e => {
+          onPointerDown={e => {
             if (activeRef.current === c.id) return; // locked in deck
             e.preventDefault();
             const p = pos.current[c.id] || { x:0, y:0 };
@@ -412,6 +447,7 @@ export default function MusicPage() {
             gsap.set(`#${c.id}`, { zIndex:200, rotation:0 });
           }}
           style={{
+            touchAction: 'none',
             position:'absolute', top:0, left:0,
             width:CW, height:CH,
             borderRadius:13,
@@ -436,6 +472,8 @@ export default function MusicPage() {
           </div>
         </div>
       ))}
+
+      </div> {/* End Scaled Content */}
 
       {/* CSS */}
       <style>{`
