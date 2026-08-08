@@ -94,8 +94,16 @@ export default function MainPortfolio() {
               display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center'
             }}>
               <Tape style={{ top: '-10px', left: '50%', transform: 'translateX(-50%) rotate(5deg)' }} />
-              <CutoutText text="ARTIST STATEMENT" rotation={1} style={{ fontSize: '1.1rem' }} />
-              <CutoutText text="EXPLORING RAW ENERGY" rotation={-2} style={{ fontSize: '1rem' }} />
+              <TransitionLink href="/musings/artist-statement" style={{ display: 'block', width: '100%' }}>
+                <div className="hover-lift" style={{ cursor: 'pointer', textAlign: 'center' }}>
+                  <CutoutText text="ARTIST STATEMENT" rotation={1} style={{ fontSize: '1.1rem' }} />
+                </div>
+              </TransitionLink>
+              <TransitionLink href="/musings/raw-energy" style={{ display: 'block', width: '100%' }}>
+                <div className="hover-lift" style={{ cursor: 'pointer', textAlign: 'center' }}>
+                  <CutoutText text="EXPLORING RAW ENERGY" rotation={-2} style={{ fontSize: '1rem' }} />
+                </div>
+              </TransitionLink>
             </div>
 
             {/* About Me & Studio Life */}
