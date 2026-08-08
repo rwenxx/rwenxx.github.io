@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   }
 };
 
+import { GlobalAudioProvider } from "@/context/AudioContext";
+import MiniPlayer from "@/components/MiniPlayer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,7 +34,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${marker.variable} font-sans`}>
         <CustomCursor />
-        {children}
+        <GlobalAudioProvider>
+          {children}
+          <MiniPlayer />
+        </GlobalAudioProvider>
       </body>
     </html>
   );

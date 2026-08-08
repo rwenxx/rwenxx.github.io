@@ -3,20 +3,7 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import gsap from 'gsap';
 import { NavTag } from '@/components/ScrapComponents';
-
-// ─────────────────────────────────────────────
-// DATA
-// ─────────────────────────────────────────────
-interface CassetteData {
-  id: string; name: string; audioSrc: string; color: string;
-  offset: { x: number; y: number; r: number }; // offset from screen center
-}
-
-const CASSETTES: CassetteData[] = [
-  { id: 'cas-1', name: 'На Заре — Баста', audioSrc: '/audio/track1.mp3', color: '#c0392b', offset: { x: -340, y: 160,  r: -14 } },
-  { id: 'cas-2', name: 'Звезда по Имени Солнце — Кино',   audioSrc: '/audio/track2.mp3', color: '#1565c0', offset: { x:  330, y:  80,  r:  22 } },
-  { id: 'cas-3', name: 'Aşk Eski Bir Yalan — Kamuran Akkor',   audioSrc: '/audio/track3.mp3', color: '#2e7d32', offset: { x: -310, y: -220, r:  -6 } },
-];
+import { useAudio, CASSETTES } from '@/context/AudioContext';
 
 const CW = 282; // cassette width
 const CH = 177; // cassette height
@@ -27,14 +14,20 @@ const CH = 177; // cassette height
 export default function MusicPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const slotRef      = useRef<HTMLDivElement>(null);
-  const audioRef     = useRef<HTMLAudioElement>(null);
-
+  const { currentTrackId, isPlaying, currentTime, playTrack, stopAudio, togglePlayPause } = useAudio();
+  
+  // Sync local activeCassette with global state (so it snaps in automatically if we return to the page)
   const [activeCassette, _setActive] = useState<string | null>(null);
-  const activeRef = useRef<string | null>(null); // mirror for closures
-  const setActive = (id: string | null) => { activeRef.current = id; _setActive(id); };
+  const activeRef = useRef<string | null>(null); 
+  const setActive = useCallback((id: string | null) => { activeRef.current = id; _setActive(id); }, []);
 
-  const [isPlaying,   setIsPlaying]   = useState(false);
-  const [tapeCounter, setTapeCounter] = useState('000');
+  useEffect(() => {
+    if (currentTrackId && currentTrackId !== activeCassette) {
+      setActive(currentTrackId);
+    }
+  }, [currentTrackId, activeCassette, setActive]);
+
+  const tapeCounter = Math.floor(currentTime).toString().padStart(3, '0');
   
   const [scale, setScale] = useState(1);
   const scaleRef = useRef(1);
@@ -151,7 +144,7 @@ export default function MusicPage() {
       onComplete: () => {
         pos.current[id] = { x: tx, y: ty };
         setActive(id);
-        startAudio(id);
+        playTrack(id);
       },
     });
   };
@@ -184,32 +177,6 @@ export default function MusicPage() {
     stopAudio();
   }, []);
 
-  // ── Audio ────────────────────────────────────
-  const startAudio = (id: string) => {
-    const data = CASSETTES.find(c => c.id === id);
-    if (!audioRef.current || !data) return;
-    audioRef.current.src = data.audioSrc;
-    audioRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-  };
-
-  const stopAudio = () => {
-    if (!audioRef.current) return;
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-    setIsPlaying(false);
-  };
-
-  const handlePlayPause = () => {
-    if (!audioRef.current || !activeCassette) return;
-    if (isPlaying) { audioRef.current.pause(); setIsPlaying(false); }
-    else           { audioRef.current.play();  setIsPlaying(true);  }
-  };
-
-  const handleTimeUpdate = () => {
-    if (!audioRef.current) return;
-    setTapeCounter(Math.floor(audioRef.current.currentTime).toString().padStart(3, '0'));
-  };
-
   const activeMeta = CASSETTES.find(c => c.id === activeCassette);
 
   // ─────────────────────────────────────────────
@@ -231,11 +198,7 @@ export default function MusicPage() {
         <NavTag text="НАЗАД" rotation={-3} href="/" />
       </div>
 
-      <audio
-        ref={audioRef}
-        onEnded={() => { setIsPlaying(false); setTapeCounter('000'); }}
-        onTimeUpdate={handleTimeUpdate}
-      />
+      {/* audio tag is now handled globally */}
 
       {/* ── SCALED CONTENT ── */}
       <div style={{
@@ -422,7 +385,7 @@ export default function MusicPage() {
           boxShadow:'inset 0 8px 24px rgba(0,0,0,0.95), 0 1px 1px rgba(255,255,255,0.07)',
           display:'flex', alignItems:'center', justifyContent:'center', gap:14, padding:'0 14px',
         }}>
-          <MechBtn label={isPlaying?'⏸ PAUSE':'▶ PLAY'} accent="#c0392b" shadow="#7b0000" onClick={handlePlayPause} w={132}/>
+          <MechBtn label={isPlaying?'⏸ PAUSE':'▶ PLAY'} accent="#c0392b" shadow="#7b0000" onClick={togglePlayPause} w={132}/>
           <MechBtn label="⏏ EJECT" accent="#3a3a3a" shadow="#0a0a0a" onClick={()=>{ if(activeCassette) snapOut(activeCassette); }} w={112}/>
         </div>
 
