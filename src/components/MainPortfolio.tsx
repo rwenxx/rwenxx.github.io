@@ -84,7 +84,7 @@ export default function MainPortfolio() {
 
             {/* Notepad */}
             <div className="hover-lift mobile-card mobile-small-rotate-right" style={{ 
-              width: '240px', height: '300px', 
+              width: '240px', height: '420px', 
               backgroundColor: '#f9f5d7', 
               backgroundImage: 'repeating-linear-gradient(transparent, transparent 29px, #64b5f6 30px)',
               padding: '40px 20px 20px 20px', 
@@ -102,6 +102,21 @@ export default function MainPortfolio() {
               <TransitionLink href="/musings/raw-energy" style={{ display: 'block', width: '100%' }}>
                 <div className="hover-lift" style={{ cursor: 'pointer', textAlign: 'center' }}>
                   <CutoutText text="EXPLORING RAW ENERGY" rotation={-2} style={{ fontSize: '1rem' }} />
+                </div>
+              </TransitionLink>
+              <TransitionLink href="/musings/zen-of-automation" style={{ display: 'block', width: '100%' }}>
+                <div className="hover-lift" style={{ cursor: 'pointer', textAlign: 'center' }}>
+                  <CutoutText text="ZEN OF AUTOMATION" rotation={3} style={{ fontSize: '1rem' }} />
+                </div>
+              </TransitionLink>
+              <TransitionLink href="/musings/beauty-of-bugs" style={{ display: 'block', width: '100%' }}>
+                <div className="hover-lift" style={{ cursor: 'pointer', textAlign: 'center' }}>
+                  <CutoutText text="THE BEAUTY OF BUGS" rotation={-1} style={{ fontSize: '1.1rem' }} />
+                </div>
+              </TransitionLink>
+              <TransitionLink href="/musings/systems-as-art" style={{ display: 'block', width: '100%' }}>
+                <div className="hover-lift" style={{ cursor: 'pointer', textAlign: 'center' }}>
+                  <CutoutText text="SYSTEMS AS ART" rotation={2} style={{ fontSize: '1.05rem' }} />
                 </div>
               </TransitionLink>
             </div>
