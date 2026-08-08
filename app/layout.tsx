@@ -6,12 +6,13 @@ const inter = Inter({ subsets: ["latin", "cyrillic"], variable: "--font-inter" }
 const marker = Caveat({ weight: "700", subsets: ["latin", "cyrillic"], variable: "--font-marker" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://rwenxx.github.io'),
   title: "Isa D. | Full-Stack & DevOps Engineer",
   description: "Digital scrapbook portfolio of Isa D. Bridging the gap between code and infrastructure.",
   openGraph: {
     title: "Isa D. | Full-Stack & DevOps Engineer",
     description: "Digital scrapbook portfolio. Bridging the gap between code and infrastructure.",
-    url: "https://isa-portfolio.vercel.app",
+    url: "https://rwenxx.github.io",
     siteName: "Isa D. Portfolio",
     type: "website",
   },
