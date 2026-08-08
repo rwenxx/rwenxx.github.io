@@ -29,6 +29,19 @@ export default function AboutPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const prevPage = useRef(0);
 
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const handleResize = () => {
+      // The book requires ~900px width when fully open (450px left + 450px right)
+      const s = window.innerWidth < 950 ? window.innerWidth / 950 : 1;
+      setScale(s);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Pages data
   const totalPages = 5; // 0, 1, 2, 3, 4
 
@@ -109,7 +122,8 @@ export default function AboutPage() {
       {/* BOOK SPINE CENTERED */}
       <div style={{
         position: 'absolute', top: '50%', left: '50%',
-        transform: 'translate(0, -50%)', // Anchor at left center
+        transform: `translate(0, -50%) scale(${scale})`, // Anchor at left center and scale
+        transformOrigin: 'left center', // ensure scaling happens from the spine
         perspective: '2000px', // Увеличенная перспектива для большей глубины 3D
         width: '450px',
         height: '600px',
